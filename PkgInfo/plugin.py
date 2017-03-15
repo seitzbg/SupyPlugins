@@ -592,26 +592,30 @@ class PkgInfo(callbacks.Plugin):
         res = []
         packagetable = soup.find_all('table')[2]
 
-        for tr in packagetable.find_all('tr')[3:]:
-            try:
-                entry = tr.find_all('td')[1].a.text
-            except IndexError:
-                continue
+	entries = {}
+	for tr in packagetable.find_all('tr')[3:]:
+	    try:
+		pkg_name = (tr.find_all('td')[1].a.text).lower()
+		entries[pkg_name] = tr.find_all('td')[2].string
+	    except IndexError:
+		continue
 
-            entry = entry.lower()
-            if not query:  # No query filter given; show everything.
-                res.append(entry)
-            elif exact:
-                if query == entry:  # Exact match
-                    res.append(entry)
-                    continue
-            elif startswith:
-                if entry.startswith(query):  # startswith() match
-                    res.append(entry)
-                    continue
-            elif query in entry:  # Default substring search
-                res.append(entry)
-                continue
+	sorted_packages = [k for k,v in sorted(entries.items(), key=lambda p: p[1], reverse=True)]
+
+	for entry in sorted_packages:
+	    if not query:  # No query filter given; show everything.
+		res.append(entry)
+	    elif exact:
+		if query == entry:  # Exact match
+		    res.append(entry)
+		    continue
+	    elif startswith:
+		if entry.startswith(query):  # startswith() match
+		    res.append(entry)
+		    continue
+	    elif query in entry:  # Default substring search
+		res.append(entry)
+		continue
 
         if res:
             irc.reply(format('Found %n: %L; View more at: %u', (len(res), 'result'), res, url))
