@@ -605,8 +605,9 @@ class PkgInfo(callbacks.Plugin):
 	for entry in sorted_packages:
 	    if not query:  # No query filter given; show everything.
 		res.append(entry)
-	    elif exact:
-		if query == entry:  # Exact match
+	    elif exact:  # Match a package name in the format 'name'-version
+                package_pattern = '^{}-[0-9]+'.format(query)
+                if re.search(package_pattern, entry):
 		    res.append(entry)
 		    continue
 	    elif startswith:
